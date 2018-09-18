@@ -10,8 +10,10 @@
 package org.obiba.opal.web.gwt.app.client.presenter;
 
 import com.google.gwt.core.client.GWT;
+
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.core.client.JsArray;
 import org.obiba.opal.web.gwt.app.client.administration.configuration.event.GeneralConfigSavedEvent;
 import org.obiba.opal.web.gwt.app.client.event.SessionCreatedEvent;
 import org.obiba.opal.web.gwt.app.client.i18n.Translations;
@@ -24,7 +26,10 @@ import org.obiba.opal.web.gwt.rest.client.ResourceAuthorizationCache;
 import org.obiba.opal.web.gwt.rest.client.ResourceRequestBuilderFactory;
 import org.obiba.opal.web.gwt.rest.client.ResponseCodeCallback;
 import org.obiba.opal.web.gwt.rest.client.UriBuilders;
+import org.obiba.opal.web.gwt.rest.client.*;
 import org.obiba.opal.web.gwt.rest.client.event.UnhandledResponseEvent;
+import org.obiba.opal.web.model.client.opal.AuthClientDto;
+import org.obiba.opal.web.model.client.opal.ProjectDto;
 import org.obiba.opal.web.model.client.search.QueryResultDto;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -75,6 +80,9 @@ public class LoginPresenter extends Presenter<LoginPresenter.Display, LoginPrese
     void setApplicationName(String text);
 
     void setBusy(boolean value);
+
+    void renderAuthClients(JsArray<AuthClientDto> clients);
+
   }
 
   @ProxyStandard
@@ -89,6 +97,8 @@ public class LoginPresenter extends Presenter<LoginPresenter.Display, LoginPrese
   private final Translations translations;
 
   private HandlerRegistration unhandledExceptionHandler;
+
+  private JsArray<AuthClientDto> authClients;
 
   @Inject
   public LoginPresenter(Display display, EventBus eventBus, Proxy proxy, RequestCredentials credentials,
@@ -141,7 +151,29 @@ public class LoginPresenter extends Presenter<LoginPresenter.Display, LoginPrese
   @Override
   protected void onReveal() {
     refreshApplicationName();
+    refreshAuthClients();
   }
+
+  private void refreshAuthClients() {
+      if (authClients != null) {
+          return; //already fetched
+      }
+
+      // Fetch all auth clients
+      ResourceRequestBuilderFactory.<JsArray<AuthClientDto>>newBuilder() //
+        .forResource(UriBuilders.AUTH_CLIENTS.create().build()) //
+                .withCallback(new ResourceCallback<JsArray<AuthClientDto>>() {
+                  @Override
+                  public void onResource(Response response, JsArray<AuthClientDto> resource) {
+                    handleAuthClients(resource);
+                  }
+                }).get().send();
+  }
+
+    private void handleAuthClients(JsArray<AuthClientDto> clients) {
+        authClients = clients;
+        getView().renderAuthClients(clients);
+    }
 
   private void refreshApplicationName() {
     ResourceRequestBuilderFactory.<QueryResultDto>newBuilder() //

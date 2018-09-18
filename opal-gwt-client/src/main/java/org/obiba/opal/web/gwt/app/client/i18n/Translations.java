@@ -2649,4 +2649,16 @@ public interface Translations extends Constants {
       "name:desc", "Name (desc)" })
   Map<String, String> sortOrderMap();
 
+  @Description("Authorization Clients title map")
+  @DefaultStringMapValue({ "UNKNOWN", "", //
+        "eidClient", "EId", //
+  })
+  Map<String, String> authClientsTitleMap();
+
+  @Description("Authorization Clients icon map")
+  @DefaultStringMapValue({ "UNKNOWN", "noimage", //
+        "eidClient", "image/eid_logo.png", //
+  })
+  Map<String, String> authClientsImageMap();
+
 }

@@ -28,6 +28,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
 
+    <buji-pac4j.version>1.3.0</buji-pac4j.version>
     <bouncycastle.version>1.46</bouncycastle.version>
     <cglib-nodep.version>3.1</cglib-nodep.version>
     <commons-codec.version>1.10</commons-codec.version>
@@ -98,6 +99,7 @@
     <opencsv.version>2.3</opencsv.version>
     <orientdb.version>2.1.2</orientdb.version>
     <ow2-spec.version>1.0.13</ow2-spec.version>
+    <pac4j.version>1.6.0</pac4j.version>
     <postgresql.version>9.4-1202-jdbc42</postgresql.version>
     <protobuf-java-format.version>1.2.1-obiba</protobuf-java-format.version>
     <protobuf.version>2.5.0</protobuf.version>
@@ -168,6 +170,7 @@
     <module>opal-search</module>
     <module>opal-upgrade</module>
     <module>opal-config-migrator</module>
+    <module>opal-pac4j</module>
   </modules>
 
   <dependencyManagement>
@@ -289,7 +292,11 @@
         <version>${project.version}</version>
         <classifier>cli</classifier>
       </dependency>
-
+      <dependency>
+        <groupId>org.obiba.opal</groupId>
+        <artifactId>opal-pac4j</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <!-- Obiba dependencies -->
       <dependency>
         <groupId>org.obiba.commons</groupId>
@@ -1467,6 +1474,18 @@
         <artifactId>newrelic-agent</artifactId>
         <version>${newrelic.version}</version>
         <scope>runtime</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-openid</artifactId>
+        <version>${pac4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.buji</groupId>
+        <artifactId>buji-pac4j-servlet</artifactId>
+        <version>${buji-pac4j.version}</version>
       </dependency>
 
     </dependencies>

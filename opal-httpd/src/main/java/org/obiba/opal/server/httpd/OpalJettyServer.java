@@ -29,6 +29,8 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
 import org.jboss.resteasy.plugins.spring.SpringContextLoaderSupport;
 import org.obiba.opal.core.runtime.OpalRuntime;
+import org.obiba.opal.pac4j.Pac4jClientFilter;
+import org.obiba.opal.pac4j.Pac4jConfigurer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -45,7 +47,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Properties;
 
@@ -118,8 +119,11 @@ public class OpalJettyServer {
     handlers.addHandler(createDistFileHandler("/webapp"));
     // Add webapp extensions
     handlers.addHandler(createExtensionFileHandler(OpalRuntime.WEBAPP_EXTENSION));
-    handlers.addHandler(createServletHandler());
+    ///Handler servletContextHandler = createServletHandler();
 
+    //check/configure pac4j extra auth clients related servlets/filters
+
+    handlers.addHandler(createServletHandler(properties));
     jettyServer.setHandler(handlers);
   }
 
@@ -191,7 +195,7 @@ public class OpalJettyServer {
     return jettySsl;
   }
 
-  private Handler createServletHandler() {
+  private Handler createServletHandler(Properties properties) {
     servletContextHandler = new ServletContextHandler(ServletContextHandler.SECURITY);
     servletContextHandler.setContextPath("/");
     servletContextHandler.addAliasCheck(new AllowSymLinkAliasChecker());
@@ -204,6 +208,8 @@ public class OpalJettyServer {
     servletContextHandler.setInitParameter("resteasy.servlet.mapping.prefix", "/ws");
     servletContextHandler.addServlet(HttpServletDispatcher.class, "/ws/*");
 
+    configurePac4j(properties);
+    
     GzipHandler gzipHandler = new GzipHandler();
     gzipHandler.setHandler(servletContextHandler);
     gzipHandler.setIncludedMimeTypes(GZIP_MIME_TYPES);
@@ -245,6 +251,14 @@ public class OpalJettyServer {
     mapping.setPathSpec("/");
 
     return mapping;
+  }
+
+  private void configurePac4j(Properties properties) {
+    if (Pac4jConfigurer.init(properties)) {
+      String pac4jCallbackPath = Pac4jConfigurer.getCallbackPath();
+      servletContextHandler.addServlet(HttpServletDispatcher.class, pac4jCallbackPath);
+      servletContextHandler.addFilter(Pac4jClientFilter.Wrapper.class, pac4jCallbackPath, EnumSet.of(REQUEST, FORWARD));
+    }
   }
 
   private Handler createDistFileHandler(String directory) throws IOException, URISyntaxException {
